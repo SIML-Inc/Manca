@@ -33,6 +33,29 @@ export async function startHttp(port = 8787, dataPath: string | null = "data/man
   const hub = new Clearinghouse(store, cfg);
   if (process.env.MANCA_SEED === "1" && store.accounts.size === 0) await seed(hub);
 
+  const CATS = ["web-scrape", "compute", "data-enrichment", "llm-eval", "translation", "image-gen"];
+  // One-click trade for the dashboard buttons: runs a full flow server-side
+  // (custodial signing) so the browser needs no keys.
+  async function simulateTrade(kind: "settle" | "insured" | "fail") {
+    const n = store.accounts.size;
+    const cat = CATS[n % CATS.length];
+    const price = 20 + ((n * 37) % 180);
+    const buyer = new Agent(hub, `buyer-${n}`).deposit(price * 3);
+    const seller = new Agent(hub, `seller-${n}`).becomeVerifiedSupplier();
+    seller.sell({ category: cat, attributes: {}, price, slaSeconds: 60, available: 1 });
+    const insured = kind === "insured";
+    const fail = kind === "fail";
+    const mandate = buyer.buy({
+      category: cat, spec: {}, maxPrice: price + 50, minReputation: 0, referencePrice: price + 40,
+      insured, verification: { type: "json_schema", requires: { ok: true } },
+      deadline: fail ? Date.now() - 1 : Date.now() + 60_000,
+    });
+    if (fail) { hub.match(mandate.id); hub.expire(); return { category: cat, price, result: "failed" }; }
+    const trade = hub.match(mandate.id);
+    const r = await seller.fulfill(trade.id, { ok: true });
+    return { category: cat, price, insured, result: r.verdict.verified ? "settled" : "rejected" };
+  }
+
   const state = () => {
     const accounts = [...store.accounts.values()].map((a) => hub.accountView(a.id));
     const trades = [...store.trades.values()].map((t) => ({
@@ -79,6 +102,8 @@ export async function startHttp(port = 8787, dataPath: string | null = "data/man
 
       if (m === "POST") {
         const body = await readBody(req);
+        if (parts[0] === "simulate")
+          return json(res, 200, await simulateTrade((body.kind ?? "settle")));
         if (parts[0] === "accounts" && parts.length === 1)
           return json(res, 201, hub.register(body.label, body.publicKey));
         if (parts[0] === "accounts" && parts[2] === "deposit")

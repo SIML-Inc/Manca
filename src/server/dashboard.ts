@@ -32,12 +32,24 @@ export function dashboardHtml(name: string, networkId: string): string {
   .bar{height:6px;border-radius:3px;background:#1b2530;overflow:hidden;min-width:80px}
   .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--purp),var(--accent))}
   .g{color:var(--good)} .w{color:var(--warn)} .gold{color:var(--gold)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 6px}
+  button{cursor:pointer;border:1px solid var(--line);background:#131a23;color:var(--fg);padding:10px 16px;border-radius:9px;font-size:13px;font-weight:600;transition:.12s}
+  button:hover{border-color:var(--accent);transform:translateY(-1px)}
+  button.buy{border-color:rgba(88,166,255,.4)} button.ins{border-color:rgba(188,140,255,.4)} button.fail{border-color:rgba(248,81,73,.4)} button.burst{border-color:rgba(63,185,80,.4)}
+  #flash{color:var(--dim);font-size:12px;align-self:center}
 </style></head><body>
 <header>
   <h1>Manca</h1><span class="tag">${name} · ${networkId}</span>
   <span class="live"><span class="dot"></span>live · updates every 2s</span>
 </header>
 <main>
+  <div class="controls">
+    <button class="buy" onclick="sim('settle')">▸ Buy something</button>
+    <button class="ins" onclick="sim('insured')">🛡️ Insured buy</button>
+    <button class="fail" onclick="sim('fail')">✕ Simulate a failure</button>
+    <button class="burst" onclick="burst()">⚡ Fire 5 trades</button>
+    <span id="flash"></span>
+  </div>
   <div class="rev"><div class="big" id="rev">$0.00</div><div class="lbl">total network revenue</div></div>
   <div class="chips" id="chips"></div>
   <h2>Revenue breakdown</h2><table id="breakdown"><tbody></tbody></table>
@@ -69,6 +81,13 @@ async function tick(){
       '<td><span class="pill '+t.status+'">'+t.status+'</span></td></tr>').join('')||'<tr><td colspan=6 style="color:var(--dim)">no trades yet — post a mandate via the API or MCP</td></tr>';
   }catch(e){}
 }
+async function sim(kind){
+  const f=document.getElementById('flash');
+  try{const r=await (await fetch('/simulate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind})})).json();
+    f.textContent=r.category+' $'+r.price+' -> '+r.result;}catch(e){f.textContent='error';}
+  tick();
+}
+async function burst(){ for(let i=0;i<5;i++){ await sim(i%3===2?'insured':(i===3?'fail':'settle')); await new Promise(r=>setTimeout(r,250)); } }
 tick();setInterval(tick,2000);
 </script></body></html>`;
 }
