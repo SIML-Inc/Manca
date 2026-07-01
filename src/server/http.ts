@@ -5,11 +5,47 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Store } from "../core/store.ts";
 import { Clearinghouse, MancaError } from "../core/clearinghouse.ts";
 import { loadConfig } from "../core/config.ts";
+import { Agent } from "../agent.ts";
+import { dashboardHtml } from "./dashboard.ts";
 
-export function startHttp(port = 8787, dataPath: string | null = "data/manca.json") {
+// Seed a little live activity so the dashboard isn't empty on first open.
+async function seed(hub: Clearinghouse) {
+  const acme = new Agent(hub, "ACME procurement").deposit(5000);
+  const scrape = new Agent(hub, "ScrapeFarm").becomeVerifiedSupplier();
+  const gpu = new Agent(hub, "NimbusGPU").becomeVerifiedSupplier();
+  const flaky = new Agent(hub, "FlakyData").becomeVerifiedSupplier();
+  scrape.sell({ category: "web-scrape", attributes: { rows: 5000 }, price: 40, slaSeconds: 30, available: 5 });
+  gpu.sell({ category: "compute", attributes: { gpu: "h100" }, price: 120, slaSeconds: 30, available: 3 });
+  flaky.sell({ category: "data-enrichment", attributes: {}, price: 25, slaSeconds: 30, available: 2 });
+
+  let m = acme.buy({ category: "web-scrape", spec: {}, maxPrice: 50, minReputation: 0, referencePrice: 60, insured: false, verification: { type: "value_threshold", field: "rows", min: 5000 }, deadline: Date.now() + 60000 });
+  await scrape.fulfill(hub.match(m.id).id, { rows: 5200 });
+  m = acme.buy({ category: "compute", spec: {}, maxPrice: 150, minReputation: 0, referencePrice: 140, insured: true, verification: { type: "json_schema", requires: { done: true } }, deadline: Date.now() + 60000 });
+  await gpu.fulfill(hub.match(m.id).id, { done: true });
+  m = acme.buy({ category: "data-enrichment", spec: {}, maxPrice: 30, minReputation: 0, insured: true, verification: { type: "json_schema", requires: { delivered: true } }, deadline: Date.now() - 1 });
+  hub.match(m.id);
+  hub.expire(Date.now());
+}
+
+export async function startHttp(port = 8787, dataPath: string | null = "data/manca.json") {
   const cfg = loadConfig();
   const store = new Store(dataPath);
   const hub = new Clearinghouse(store, cfg);
+  if (process.env.MANCA_SEED === "1" && store.accounts.size === 0) await seed(hub);
+
+  const state = () => {
+    const accounts = [...store.accounts.values()].map((a) => hub.accountView(a.id));
+    const trades = [...store.trades.values()].map((t) => ({
+      id: t.id,
+      category: store.mandates.get(t.mandateId)?.category ?? "?",
+      buyer: store.accounts.get(t.buyerId)?.label ?? t.buyerId,
+      seller: store.accounts.get(t.sellerId)?.label ?? t.sellerId,
+      price: t.price,
+      insured: t.insured,
+      status: t.status,
+    }));
+    return { network: cfg.network, revenue: hub.revenueReport(), accounts, trades };
+  };
 
   const json = (res: ServerResponse, code: number, body: unknown) => {
     const s = JSON.stringify(body, null, 2);
@@ -29,6 +65,11 @@ export function startHttp(port = 8787, dataPath: string | null = "data/manca.jso
       const parts = url.pathname.split("/").filter(Boolean);
       const m = req.method ?? "GET";
 
+      if (m === "GET" && parts.length === 0) {
+        res.writeHead(200, { "content-type": "text/html" });
+        return res.end(dashboardHtml(cfg.network.name, cfg.network.id));
+      }
+      if (m === "GET" && parts[0] === "state") return json(res, 200, state());
       if (m === "GET" && parts[0] === "health")
         return json(res, 200, { ok: true, network: cfg.network.id, name: cfg.network.name });
       if (m === "GET" && parts[0] === "revenue")
