@@ -7,8 +7,21 @@
     "node": ">=22.6.0"
   },
   "bin": {
-    "manca": "src/cli.ts"
+    "manca": "bin/manca.mjs"
   },
+  "files": [
+    "bin/",
+    "src/",
+    "docs/",
+    "manca.config.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SIML-Inc/Manca.git"
+  },
+  "homepage": "https://github.com/SIML-Inc/Manca",
   "scripts": {
     "init": "node --experimental-strip-types src/cli.ts init",
     "serve": "node --experimental-strip-types src/cli.ts serve",

@@ -42,12 +42,25 @@ Manca is a reference implementation of that layer. It **consumes** AP2/UCP/x402;
 
 ---
 
-## Quickstart (zero dependencies, Node ≥ 22.6)
+## Try it in 10 seconds (no clone, no install)
 
 ```bash
-git clone <this repo> && cd Manca
-npm test        # 8 passing tests — the clearing mechanism, proven
-npm run demo    # watch two agents trade A2A and money accrue to the network
+npx -y github:SIML-Inc/Manca demo     # watch agents trade A2A + money accrue
+```
+
+Add it to any MCP client (Claude Desktop, Cursor, …):
+
+```json
+{ "mcpServers": { "manca": { "command": "npx", "args": ["-y", "github:SIML-Inc/Manca", "mcp"] } } }
+```
+
+## Quickstart from source (zero dependencies, Node ≥ 22.6)
+
+```bash
+git clone https://github.com/SIML-Inc/Manca && cd Manca
+npm test               # 12 passing tests — the clearing + x402 mechanism, proven
+npm run demo           # A2A trade demo with live P&L and x402 settlement
+MANCA_SEED=1 npm run serve   # live dashboard at http://localhost:8787
 ```
 
 `npm run demo` output ends with a live P&L:

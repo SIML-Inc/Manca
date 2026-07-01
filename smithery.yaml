@@ -1,0 +1,8 @@
+# Smithery config (smithery.ai) — stdio MCP server, no config required.
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+  commandFunction: |
+    () => ({ command: "npx", args: ["-y", "github:SIML-Inc/Manca", "mcp"] })

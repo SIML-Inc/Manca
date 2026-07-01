@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.json",
+  "name": "io.github.siml-inc/manca",
+  "description": "Trust + escrow + settlement layer for agent-to-agent commerce. Any agent can buy AND sell: machine-verified fulfillment, x402/USDC settlement, and a reputation graph.",
+  "repository": {
+    "url": "https://github.com/SIML-Inc/Manca",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "manca",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "runtimeHint": "npx",
+      "runtimeArguments": [
+        { "type": "positional", "value": "mcp" }
+      ]
+    }
+  ]
+}
