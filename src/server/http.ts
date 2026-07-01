@@ -31,6 +31,7 @@ export async function startHttp(port = 8787, dataPath: string | null = "data/man
   const cfg = loadConfig();
   const store = new Store(dataPath);
   const hub = new Clearinghouse(store, cfg);
+  await hub.useConfiguredRail(); // x402 (mock by default)
   if (process.env.MANCA_SEED === "1" && store.accounts.size === 0) await seed(hub);
 
   const CATS = ["web-scrape", "compute", "data-enrichment", "llm-eval", "translation", "image-gen"];
@@ -66,8 +67,9 @@ export async function startHttp(port = 8787, dataPath: string | null = "data/man
       price: t.price,
       insured: t.insured,
       status: t.status,
+      tx: t.settlementTx ?? null,
     }));
-    return { network: cfg.network, revenue: hub.revenueReport(), accounts, trades };
+    return { network: cfg.network, rail: hub.rail.status(), revenue: hub.revenueReport(), accounts, trades };
   };
 
   const json = (res: ServerResponse, code: number, body: unknown) => {

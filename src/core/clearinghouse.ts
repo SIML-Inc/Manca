@@ -8,6 +8,8 @@ import { RevenueEngine } from "./revenue.ts";
 import { verifyFulfillment } from "./fulfillment.ts";
 import type { HttpProbe, VerdictResult } from "./fulfillment.ts";
 import { applyOutcome, autonomousSpendLimit, riskAdjustedPremiumBps } from "./reputation.ts";
+import { InternalRail, buildRail } from "../rails/settlement.ts";
+import type { SettlementRail } from "../rails/settlement.ts";
 import type {
   Account,
   BuyMandate,
@@ -45,14 +47,25 @@ export class Clearinghouse {
   cfg: MancaConfig;
   revenue: RevenueEngine;
   insurancePool: number;
+  rail: SettlementRail;
   private httpProbe: HttpProbe | undefined;
 
-  constructor(store: Store, cfg: MancaConfig, httpProbe?: HttpProbe) {
+  constructor(store: Store, cfg: MancaConfig, httpProbe?: HttpProbe, rail?: SettlementRail) {
     this.store = store;
     this.cfg = cfg;
     this.revenue = new RevenueEngine(store, cfg);
     this.httpProbe = httpProbe;
     this.insurancePool = cfg.insurance.poolFloor;
+    // Default to the internal ledger; a real rail (x402) can be injected or
+    // built from config via useRail().
+    this.rail = rail ?? new InternalRail();
+  }
+
+  // Load the settlement rail declared in config (e.g. x402). Call once after
+  // construction when you want real (or mock-x402) settlement.
+  async useConfiguredRail(): Promise<this> {
+    this.rail = await buildRail(this.cfg);
+    return this;
   }
 
   private acc(id: string): Account {
@@ -236,11 +249,11 @@ export class Clearinghouse {
     const verdict = await verifyFulfillment(trade.verification, payload, this.httpProbe);
     if (!verdict.verified) return { trade, verdict };
 
-    this.settle(trade);
+    await this.settle(trade);
     return { trade, verdict };
   }
 
-  private settle(trade: Trade): void {
+  private async settle(trade: Trade): Promise<void> {
     const buyer = this.acc(trade.buyerId);
     const seller = this.acc(trade.sellerId);
 
@@ -249,10 +262,22 @@ export class Clearinghouse {
       : trade.clearingFee;
     const sellerClearingFee = round(trade.clearingFee - buyerClearingFee);
     const escrowLock = round(trade.price + buyerClearingFee);
-
-    // Release escrow: seller is paid price minus their share of the clearing fee.
-    buyer.escrowLocked = round(buyer.escrowLocked - escrowLock);
     const sellerProceeds = round(trade.price - sellerClearingFee);
+
+    // Move the value on the settlement rail FIRST. If real settlement fails, we
+    // do not credit the seller — the trade stays matched and can be retried.
+    const settlement = await this.rail.settle({
+      from: this.cfg.network.id,
+      to: seller.payoutAddress ?? seller.id,
+      amount: sellerProceeds,
+      ref: trade.id,
+    });
+    trade.settlementRail = settlement.rail;
+    trade.settlementMode = settlement.mode;
+    trade.settlementTx = settlement.txHash;
+
+    // Release escrow and credit the seller now that the rail confirmed.
+    buyer.escrowLocked = round(buyer.escrowLocked - escrowLock);
     seller.balance = round(seller.balance + sellerProceeds);
 
     // Revenue: clearing fee + float earned in flight + realized savings share.

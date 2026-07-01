@@ -7,6 +7,7 @@ export interface Account {
   id: string;
   label: string;
   publicKey: string; // base64url ed25519 SPKI
+  payoutAddress?: string; // EVM address for on-chain (x402) settlement
   balance: number; // available settlement balance
   escrowLocked: number; // funds currently locked in open trades
   reputation: number;
@@ -74,6 +75,9 @@ export interface Trade {
   deadline: number;
   fulfillmentAttempts: number;
   failReason?: string;
+  settlementRail?: string; // "internal" | "x402"
+  settlementMode?: string; // "ledger" | "mock" | "testnet" | "mainnet"
+  settlementTx?: string | null; // on-chain (or mock) tx hash
 }
 
 export type RevenueReason =
@@ -126,4 +130,22 @@ export interface MancaConfig {
     maxSpendCeilingUsd: number;
   };
   risk: { minReputationToSell: number; premiumReputationPivot: number };
+  settlement?: SettlementConfig;
+}
+
+export interface X402Config {
+  mode: "mock" | "testnet" | "mainnet";
+  facilitator: string;
+  network: string; // eip155:84532 (Base Sepolia) | eip155:8453 (Base)
+  asset: string; // USDC contract address
+  usdcDecimals: number;
+  usdcName: string;
+  usdcVersion: string;
+  maxTimeoutSeconds: number;
+  allowMainnet: boolean;
+}
+
+export interface SettlementConfig {
+  rail: "internal" | "x402";
+  x402: X402Config;
 }

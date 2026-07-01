@@ -35,7 +35,22 @@ async function main() {
     }
     case "mcp": {
       const { startMcp } = await import("./server/mcp.ts");
-      startMcp();
+      await startMcp();
+      break;
+    }
+    case "x402:status": {
+      const { loadConfig } = await import("./core/config.ts");
+      const { buildRail } = await import("./rails/settlement.ts");
+      const rail = await buildRail(loadConfig());
+      console.log(JSON.stringify(rail.status(), null, 2));
+      const mode = (rail.status() as any).mode;
+      if (mode === "mock") {
+        console.log("\nMock mode — nothing real moves. To go live on Base Sepolia testnet:");
+        console.log("  1) set manca.config.json settlement.x402.mode = 'testnet'");
+        console.log("  2) npm i viem");
+        console.log("  3) export X402_PRIVATE_KEY=0x<manca escrow wallet with testnet USDC>");
+        console.log("  4) give sellers a payoutAddress (EVM). Then trades settle real testnet USDC.");
+      }
       break;
     }
     case "demo": {

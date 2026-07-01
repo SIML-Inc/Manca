@@ -14,7 +14,11 @@
     "serve": "node --experimental-strip-types src/cli.ts serve",
     "mcp": "node --experimental-strip-types src/cli.ts mcp",
     "demo": "node --experimental-strip-types src/cli.ts demo",
+    "x402:status": "node --experimental-strip-types src/cli.ts x402:status",
     "test": "node --test --experimental-strip-types test/*.test.ts"
+  },
+  "optionalDependencies": {
+    "viem": "^2.0.0"
   },
   "keywords": [
     "agent-commerce",

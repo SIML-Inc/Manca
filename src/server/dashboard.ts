@@ -40,6 +40,7 @@ export function dashboardHtml(name: string, networkId: string): string {
 </style></head><body>
 <header>
   <h1>Manca</h1><span class="tag">${name} · ${networkId}</span>
+  <span class="tag" id="rail" style="color:var(--purp)"></span>
   <span class="live"><span class="dot"></span>live · updates every 2s</span>
 </header>
 <main>
@@ -54,13 +55,14 @@ export function dashboardHtml(name: string, networkId: string): string {
   <div class="chips" id="chips"></div>
   <h2>Revenue breakdown</h2><table id="breakdown"><tbody></tbody></table>
   <h2>Accounts · reputation graph (the moat)</h2><table id="accts"><thead><tr><th>agent</th><th>balance</th><th>escrow</th><th>reputation</th><th></th><th>ok/fail</th><th>autonomy</th></tr></thead><tbody></tbody></table>
-  <h2>Trades</h2><table id="trades"><thead><tr><th>id</th><th>category</th><th>buyer → seller</th><th>price</th><th>insured</th><th>status</th></tr></thead><tbody></tbody></table>
+  <h2>Trades</h2><table id="trades"><thead><tr><th>id</th><th>category</th><th>buyer → seller</th><th>price</th><th>insured</th><th>status</th><th>settlement (x402)</th></tr></thead><tbody></tbody></table>
 </main>
 <script>
 const usd=n=>'$'+Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4});
 async function tick(){
   try{
     const s=await (await fetch('/state')).json();
+    if(s.rail) document.getElementById('rail').textContent='rail: '+s.rail.rail+'/'+s.rail.mode+(s.rail.network&&s.rail.network!=='internal'?' · '+s.rail.network:'');
     document.getElementById('rev').textContent=usd(s.revenue.total);
     document.getElementById('chips').innerHTML=[
       ['settled',s.revenue.settled],['failed',s.revenue.failed],
@@ -75,10 +77,12 @@ async function tick(){
         '<td class="mono"><span class="g">'+a.successfulTrades+'</span>/<span class="w">'+a.failedTrades+'</span></td>'+
         '<td class="mono">'+usd(a.autonomousSpendLimit)+'</td></tr>';
     }).join('');
+    const explorer=(s.rail&&(s.rail.mode==='testnet'||s.rail.mode==='mainnet'))?(s.rail.mode==='mainnet'?'https://basescan.org/tx/':'https://sepolia.basescan.org/tx/'):null;
+    const txcell=t=>{if(!t.tx)return '<span style="color:var(--dim)">—</span>';const short=t.tx.slice(0,10)+'…'+t.tx.slice(-6);return explorer?'<a class="mono" target="_blank" href="'+explorer+t.tx+'">'+short+'</a>':'<span class="mono" style="color:var(--purp)">'+short+'</span>';};
     document.querySelector('#trades tbody').innerHTML=s.trades.map(t=>
       '<tr><td class="mono">'+t.id+'</td><td>'+t.category+'</td><td>'+t.buyer+' → '+t.seller+'</td>'+
       '<td class="mono">'+usd(t.price)+'</td><td>'+(t.insured?'🛡️':'')+'</td>'+
-      '<td><span class="pill '+t.status+'">'+t.status+'</span></td></tr>').join('')||'<tr><td colspan=6 style="color:var(--dim)">no trades yet — post a mandate via the API or MCP</td></tr>';
+      '<td><span class="pill '+t.status+'">'+t.status+'</span></td><td>'+txcell(t)+'</td></tr>').join('')||'<tr><td colspan=7 style="color:var(--dim)">no trades yet — click a button above</td></tr>';
   }catch(e){}
 }
 async function sim(kind){

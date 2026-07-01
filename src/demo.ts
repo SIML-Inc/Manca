@@ -14,9 +14,11 @@ async function main() {
   const cfg = loadConfig();
   // deterministic offline http probe for the demo
   const hub = new Clearinghouse(new Store(), cfg, async (u) => (u.includes("healthy") ? 200 : 500));
+  await hub.useConfiguredRail(); // x402 (mock) — settlement produces tx hashes
 
   line(`${B}Manca${X} ${D}// ${cfg.network.name} (${cfg.network.id})${X}`);
   line(`${D}The missing trust layer for agent-to-agent commerce.${X}`);
+  line(`${D}settlement rail: ${JSON.stringify(hub.rail.status())}${X}`);
 
   // Everyone is a symmetric clearing account: buyer and seller at once.
   const acme = new Agent(hub, "ACME procurement agent").deposit(5000);
@@ -42,6 +44,7 @@ async function main() {
   line(`  matched ${C}web-scrape${X} -> escrow locked ${usd(acme.view().escrowLocked)} (autonomy limit ${usd(acme.view().autonomousSpendLimit)})`);
   let r = await scrapers.fulfill(t.id, { rows: 5200 });
   line(`  fulfillment verdict: ${r.verdict.verified ? G + "VERIFIED" : R + "REJECTED"}${X} (${(r.verdict as any).reason}) -> ${G}settled${X}, seller paid ${usd(scrapers.view().balance)}`);
+  line(`  ${D}settled on ${r.trade.settlementRail}/${r.trade.settlementMode}, tx ${String(r.trade.settlementTx).slice(0, 18)}…${X}`);
 
   // (b) verified by http probe
   m = acme.buy({
