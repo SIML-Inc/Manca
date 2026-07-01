@@ -1,0 +1,7 @@
+node_modules/
+.manca/network.json
+*.log
+.DS_Store
+data/*.json
+!data/.gitkeep
+.env

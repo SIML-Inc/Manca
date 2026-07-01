@@ -1,0 +1,47 @@
+{
+  "$schema": "./docs/config.schema.json",
+  "network": {
+    "id": "manca_b0909cbe45c53332",
+    "name": "Manca Prime",
+    "publicKey": "MCowBQYDK2VwAyEAbbfS2-7nNj_z46hB3Vi6Uic4jnE5QXlLkO3MiaUCOa8",
+    "settlementAsset": "USDC",
+    "createdAt": "2026-07-01T00:00:00Z"
+  },
+  "clearing": {
+    "clearingFeeBps": 50,
+    "clearingFeePayer": "buyer",
+    "minTradeValue": 0.01,
+    "mandateTtlSeconds": 3600
+  },
+  "float": {
+    "floatApyBps": 420,
+    "floatBeneficiary": "network"
+  },
+  "savingsShare": {
+    "enabled": true,
+    "savingsShareBps": 1500
+  },
+  "insurance": {
+    "enabled": true,
+    "premiumBps": 200,
+    "poolFloor": 0,
+    "maxCoverageMultiple": 1.0
+  },
+  "verifiedSupply": {
+    "subscriptionMonthlyUsd": 99,
+    "verificationRequired": true
+  },
+  "reputation": {
+    "startScore": 500,
+    "minScore": 0,
+    "maxScore": 1000,
+    "successDelta": 12,
+    "failureDelta": 40,
+    "autonomousSpendCurve": "score/1000 * maxSpend",
+    "maxSpendCeilingUsd": 100000
+  },
+  "risk": {
+    "minReputationToSell": 250,
+    "premiumReputationPivot": 700
+  }
+}

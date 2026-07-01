@@ -1,0 +1,34 @@
+{
+  "name": "manca",
+  "version": "0.1.0",
+  "description": "The missing trust layer for agent-to-agent commerce. A neutral clearinghouse where any agent buys AND sells, with machine-verifiable escrow, float, and a reputation graph — monetizable on day one.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "bin": {
+    "manca": "src/cli.ts"
+  },
+  "scripts": {
+    "init": "node src/cli.ts init",
+    "serve": "node src/cli.ts serve",
+    "mcp": "node src/cli.ts mcp",
+    "demo": "node src/cli.ts demo",
+    "test": "node --test --experimental-strip-types test/"
+  },
+  "keywords": [
+    "agent-commerce",
+    "a2a",
+    "clearinghouse",
+    "escrow",
+    "mcp",
+    "ap2",
+    "x402",
+    "agentic-commerce",
+    "settlement",
+    "reputation"
+  ],
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
