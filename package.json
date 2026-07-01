@@ -7,10 +7,10 @@
     "node": ">=22.6.0"
   },
   "bin": {
-    "manca": "bin/manca.mjs"
+    "manca": "dist/cli.mjs"
   },
   "files": [
-    "bin/",
+    "dist/",
     "src/",
     "docs/",
     "manca.config.json",
@@ -28,10 +28,15 @@
     "mcp": "node --experimental-strip-types src/cli.ts mcp",
     "demo": "node --experimental-strip-types src/cli.ts demo",
     "x402:status": "node --experimental-strip-types src/cli.ts x402:status",
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --outfile=dist/cli.mjs --external:viem",
+    "prepublishOnly": "npm run build",
     "test": "node --test --experimental-strip-types test/*.test.ts"
   },
   "optionalDependencies": {
     "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
   },
   "keywords": [
     "agent-commerce",
