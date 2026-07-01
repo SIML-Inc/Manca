@@ -12,9 +12,13 @@ interface RpcReq { jsonrpc: "2.0"; id?: number | string | null; method: string; 
 
 const PROTOCOL_VERSION = "2025-06-18";
 
-export function startMcp(dataPath: string | null = "data/mcp.json") {
+// MCP is custodial (Manca holds the session's account keys in memory), so state
+// is session-scoped for the life of the connection — the standard, honest model
+// for a stdio MCP server. The HTTP surface is the durable, external-key path.
+export function startMcp(dataPath: string | null = null) {
   const cfg = loadConfig();
-  const hub = new Clearinghouse(new Store(dataPath), cfg);
+  const store = new Store(dataPath);
+  const hub = new Clearinghouse(store, cfg);
   // custodial agents keyed by a caller-chosen handle
   const agents = new Map<string, Agent>();
   const agentFor = (handle: string): Agent => {

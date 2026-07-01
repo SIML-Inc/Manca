@@ -10,11 +10,11 @@
     "manca": "src/cli.ts"
   },
   "scripts": {
-    "init": "node src/cli.ts init",
-    "serve": "node src/cli.ts serve",
-    "mcp": "node src/cli.ts mcp",
-    "demo": "node src/cli.ts demo",
-    "test": "node --test --experimental-strip-types test/"
+    "init": "node --experimental-strip-types src/cli.ts init",
+    "serve": "node --experimental-strip-types src/cli.ts serve",
+    "mcp": "node --experimental-strip-types src/cli.ts mcp",
+    "demo": "node --experimental-strip-types src/cli.ts demo",
+    "test": "node --test --experimental-strip-types test/*.test.ts"
   },
   "keywords": [
     "agent-commerce",
