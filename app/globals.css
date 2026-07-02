@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+/* Manca — terminal/clearinghouse aesthetic. Mono-forward, sharp edges, one
+   restrained signal accent. */
+@theme {
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--font-grotesk), var(--font-jetbrains), sans-serif;
+
+  --color-bg: #08090a;
+  --color-panel: #0e0f11;
+  --color-panel-2: #131418;
+  --color-border: #212327;
+  --color-border-strong: #2f3237;
+  --color-fg: #e9e9ec;
+  --color-muted: #8a8d95;
+  --color-faint: #5a5d64;
+  --color-accent: #b8ff3c;
+  --color-accent-dim: #7fae2a;
+  --color-blue: #6db3ff;
+  --color-red: #ff6b6b;
+  --color-green: #57d98a;
+  --color-amber: #ffb84d;
+
+  --radius: 0px;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-image:
+    radial-gradient(60rem 40rem at 80% -10%, rgba(184, 255, 60, 0.05), transparent),
+    radial-gradient(50rem 40rem at -10% 20%, rgba(109, 179, 255, 0.04), transparent);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #000;
+}
+
+/* thin, crisp scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); }
+
+@layer components {
+  .panel {
+    background: var(--color-panel);
+    border: 1px solid var(--color-border);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-panel-2);
+    color: var(--color-fg);
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    border-radius: 0;
+  }
+  .btn:hover { border-color: var(--color-faint); background: #191b1f; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .btn-accent {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #0a0a0a;
+    font-weight: 600;
+  }
+  .btn-accent:hover { background: #c8ff5e; border-color: #c8ff5e; }
+
+  .btn-ghost { background: transparent; border-color: var(--color-border); }
+  .btn-ghost:hover { background: var(--color-panel-2); }
+
+  .input {
+    width: 100%;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-fg);
+    padding: 0.5rem 0.7rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    border-radius: 0;
+    outline: none;
+  }
+  .input:focus { border-color: var(--color-accent-dim); }
+  .input::placeholder { color: var(--color-faint); }
+
+  .label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); }
+
+  .tag {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    border: 1px solid var(--color-border-strong);
+    padding: 0.1rem 0.45rem; font-size: 0.6875rem; letter-spacing: 0.03em;
+    color: var(--color-muted); border-radius: 0;
+  }
+
+  .kbd {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-panel-2);
+    padding: 0.05rem 0.35rem; font-size: 0.75rem; color: var(--color-muted);
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(var(--color-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -1px -1px;
+  }
+}
+
+.font-display { font-family: var(--font-display); }

@@ -1,7 +1,8 @@
 {
   "name": "manca",
   "version": "0.1.0",
-  "description": "The missing trust layer for agent-to-agent commerce. A neutral clearinghouse where any agent buys AND sells, with machine-verifiable escrow, float, and a reputation graph — monetizable on day one.",
+  "private": true,
+  "description": "The missing trust layer for agent-to-agent commerce: a neutral clearinghouse where any agent buys AND sells, with machine-verifiable escrow, float, and a reputation graph.",
   "type": "module",
   "engines": {
     "node": ">=22.6.0"
@@ -9,34 +10,23 @@
   "bin": {
     "manca": "dist/cli.mjs"
   },
-  "files": [
-    "dist/",
-    "src/",
-    "docs/",
-    "manca.config.json",
-    "README.md",
-    "LICENSE"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SIML-Inc/Manca.git"
   },
-  "homepage": "https://github.com/SIML-Inc/Manca",
+  "homepage": "https://trymanca.ai",
   "scripts": {
-    "init": "node --experimental-strip-types src/cli.ts init",
-    "serve": "node --experimental-strip-types src/cli.ts serve",
-    "mcp": "node --experimental-strip-types src/cli.ts mcp",
-    "demo": "node --experimental-strip-types src/cli.ts demo",
-    "x402:status": "node --experimental-strip-types src/cli.ts x402:status",
-    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --outfile=dist/cli.mjs --external:viem",
-    "prepublishOnly": "npm run build",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.sdk.json --noEmit",
+    "convex": "convex dev",
+    "convex:deploy": "convex deploy",
+    "sdk:mcp": "node --experimental-strip-types src/cli.ts mcp",
+    "sdk:serve": "node --experimental-strip-types src/cli.ts serve",
+    "sdk:demo": "node --experimental-strip-types src/cli.ts demo",
+    "sdk:build": "esbuild src/cli.ts --bundle --platform=node --format=esm --outfile=dist/cli.mjs --external:viem",
     "test": "node --test --experimental-strip-types test/*.test.ts"
-  },
-  "optionalDependencies": {
-    "viem": "^2.0.0"
-  },
-  "devDependencies": {
-    "esbuild": "^0.24.0"
   },
   "keywords": [
     "agent-commerce",
@@ -51,6 +41,22 @@
     "reputation"
   ],
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@auth/core": "0.37.4",
+    "@convex-dev/auth": "^0.0.87",
+    "convex": "^1.42.1",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "esbuild": "^0.24.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
 }

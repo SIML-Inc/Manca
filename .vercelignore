@@ -1,0 +1,9 @@
+# Never upload local-only or secret files to Vercel.
+.env.local
+.env*.local
+.manca/
+data/*.json
+src/
+test/
+examples/
+scripts/

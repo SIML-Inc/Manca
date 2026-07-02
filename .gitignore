@@ -5,3 +5,15 @@ node_modules/
 data/*.json
 !data/.gitkeep
 .env
+.env*.local
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+.vercel/
+*.tsbuildinfo
+
+# Convex generated
+convex/_generated/
+.vercel
